@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HorseRacingAI - 高精度競馬予測システム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        .api-section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .api-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        
+        .endpoint {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .method {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+        }
+        
+        .demo-button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        
+        .demo-button:hover {
+            background: #5a5fd8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🏇 HorseRacingAI</h1>
+            <p class="subtitle">機械学習による高精度競馬予測システム</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">15%+</div>
+                <div class="stat-label">的中率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">5%+</div>
+                <div class="stat-label">期待ROI</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">1.0+</div>
+                <div class="stat-label">シャープレシオ</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">100+</div>
+                <div class="stat-label">特徴量数</div>
+            </div>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🤖 アンサンブル機械学習</h3>
+                <p>LightGBM (40%)、XGBoost (30%)、ニューラルネットワーク (30%) を組み合わせた高精度予測モデル</p>
+            </div>
+            <div class="feature-card">
+                <h3>📊 高度な特徴量エンジニアリング</h3>
+                <p>スピード指数、クラスレーティング、セクショナルタイム分析など100以上の特徴量を活用</p>
+            </div>
+            <div class="feature-card">
+                <h3>💰 最適化された資金管理</h3>
+                <p>ケリー基準に基づく科学的な賭け金配分と、3段階のリスク管理レベル</p>
+            </div>
+            <div class="feature-card">
+                <h3>🚀 リアルタイム予測</h3>
+                <p>レース直前までの最新データを反映した動的な予測システム</p>
+            </div>
+            <div class="feature-card">
+                <h3>📈 パフォーマンス監視</h3>
+                <p>Prometheus/Grafanaによる詳細なシステム監視とパフォーマンス分析</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔒 セキュアなAPI</h3>
+                <p>APIキー認証による安全なアクセス制御と高速なレスポンス</p>
+            </div>
+        </div>
+        
+        <div class="api-section">
+            <h2>API エンドポイント</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                /api/races?date={date}
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                /api/predictions?raceId={race_id}
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                /api/betting?raceId={race_id}&bankroll={amount}&riskLevel={level}
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                /api/performance?days={days}
+            </div>
+            
+            <a href="#" class="demo-button" onclick="alert('APIドキュメントは準備中です')">APIドキュメントを見る</a>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2024 HorseRacingAI. 研究・教育目的での利用に限定されます。</p>
+    </footer>
+</body>
+</html>
