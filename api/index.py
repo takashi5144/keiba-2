@@ -1,15 +1,17 @@
+from http.server import BaseHTTPRequestHandler
 from datetime import datetime
+import json
 
-def handler(request):
-    """Vercel用のハンドラー関数"""
-    path = request.url.split('?')[0].split('/')[-1] or ''
-    
-    # APIステータス
-    if path == 'api' or path == '':
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'application/json'},
-            'body': {
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        path = self.path.split('?')[0]
+        
+        # APIステータス
+        if path == '/api' or path == '/api/':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            response = {
                 'message': '競馬データ分析API',
                 'version': '1.0',
                 'status': 'active',
@@ -20,27 +22,29 @@ def handler(request):
                     '/api/race/{race_id}': 'レース詳細情報を取得（開発中）'
                 }
             }
-        }
-    
-    # テストエンドポイント
-    elif path == 'test':
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'application/json'},
-            'body': {
+            self.wfile.write(json.dumps(response).encode())
+            return
+        
+        # テストエンドポイント
+        elif path == '/api/test':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            response = {
                 'status': 'success',
                 'message': 'API is working correctly',
                 'timestamp': datetime.now().isoformat()
             }
-        }
-    
-    # レース一覧
-    elif path == 'races':
-        date_str = request.url.split('date=')[-1] if 'date=' in request.url else datetime.now().strftime('%Y%m%d')
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'application/json'},
-            'body': {
+            self.wfile.write(json.dumps(response).encode())
+            return
+        
+        # レース一覧
+        elif path == '/api/races':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            date_str = datetime.now().strftime('%Y%m%d')
+            response = {
                 'date': date_str,
                 'count': 2,
                 'races': [
@@ -64,15 +68,16 @@ def handler(request):
                     }
                 ]
             }
-        }
-    
-    # レース詳細
-    elif path.startswith('race'):
-        race_id = path.split('/')[-1] if '/' in path else 'R001'
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'application/json'},
-            'body': {
+            self.wfile.write(json.dumps(response).encode())
+            return
+        
+        # レース詳細
+        elif path.startswith('/api/race/'):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            race_id = path.split('/')[-1]
+            response = {
                 'race_id': race_id,
                 'race_name': 'サンプルレース',
                 'race_date': datetime.now().strftime('%Y-%m-%d'),
@@ -93,12 +98,14 @@ def handler(request):
                     }
                 ]
             }
-        }
-    
-    # 404
-    else:
-        return {
-            'statusCode': 404,
-            'headers': {'Content-Type': 'application/json'},
-            'body': {'error': 'Endpoint not found'}
-        }
+            self.wfile.write(json.dumps(response).encode())
+            return
+        
+        # 404
+        else:
+            self.send_response(404)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            response = {'error': 'Endpoint not found'}
+            self.wfile.write(json.dumps(response).encode())
+            return
