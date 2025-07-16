@@ -1,112 +1,137 @@
-# 競馬データ分析ツール
+# HorseRacingAI - 高精度競馬予測システム
 
-NetKeibaから競馬データをスクレイピングし、分析・予測を行うWebアプリケーションです。
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.95+-green.svg)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-20.10+-blue.svg)](https://www.docker.com)
 
-## 機能
+## 概要
 
-- **データ収集**: NetKeibaからレース情報、馬情報、オッズ情報を自動収集
-- **データ分析**: 馬の成績分析、騎手分析、馬場状態別分析など
-- **レース予測**: 過去データに基づくレース結果予測
-- **投資戦略分析**: 様々な投資戦略の回収率シミュレーション
-- **ダッシュボード**: 直感的なUIでデータを可視化
+HorseRacingAIは、機械学習を用いた高精度な競馬予測システムです。ネット競馬からのデータ収集、高度な特徴量エンジニアリング、アンサンブル機械学習モデル、そして資金管理戦略を統合した包括的なソリューションを提供します。
+
+### 主な特徴
+
+- 🏇 **自動データ収集**: ネット競馬からの包括的なデータスクレイピング
+- 🤖 **アンサンブルML**: LightGBM、XGBoost、ニューラルネットワークの統合
+- 📊 **高度な特徴量**: 100以上の特徴量による精密な分析
+- 💰 **資金管理**: ケリー基準に基づく最適な賭け金計算
+- 🚀 **高性能API**: FastAPIによるRESTful API
+- 📈 **リアルタイム予測**: レース直前までの最新データ反映
+- 🔍 **パフォーマンス監視**: Prometheus/Grafanaによる詳細な監視
+
+## プロジェクト構造
+
+```
+keiba-analysis-tool/
+├── services/              # マイクロサービス
+│   ├── data_collector/    # データ収集サービス
+│   ├── feature_engineering/   # 特徴量生成サービス
+│   ├── prediction_engine/     # 予測エンジン
+│   ├── money_management/      # 資金管理サービス
+│   └── api_gateway/          # APIゲートウェイ
+├── database/             # データベース関連
+│   ├── models/          # SQLAlchemyモデル
+│   └── migrations/      # Alembicマイグレーション
+├── deployment/          # デプロイメント設定
+│   ├── docker/         # Dockerファイル
+│   └── kubernetes/     # Kubernetes設定
+├── tests/              # テスト
+├── docs/               # ドキュメント
+└── docker-compose.yml  # Docker Compose設定
+```
 
 ## 技術スタック
 
-- **バックエンド**: Python, Flask
-- **フロントエンド**: Streamlit
-- **データベース**: SQLAlchemy (SQLite/PostgreSQL対応)
-- **スクレイピング**: BeautifulSoup4, Requests
-- **データ分析**: Pandas, NumPy
-- **可視化**: Plotly
+### バックエンド
+- **言語**: Python 3.9+
+- **Webフレームワーク**: FastAPI
+- **タスクキュー**: Celery + Redis
+- **データベース**: PostgreSQL
+- **オブジェクトストレージ**: MinIO
 
-## セットアップ
+### 機械学習
+- **勾配ブースティング**: LightGBM, XGBoost
+- **深層学習**: TensorFlow/Keras
+- **データ処理**: Pandas, NumPy
+- **特徴量エンジニアリング**: scikit-learn
 
-### 必要条件
+### インフラストラクチャ
+- **コンテナ化**: Docker, Docker Compose
+- **監視**: Prometheus, Grafana
+- **ログ管理**: Loguru
 
-- Python 3.8以上
-- pip
+## クイックスタート
+
+### 前提条件
+
+- Docker 20.10+
+- Docker Compose 2.0+
+- Git
 
 ### インストール
 
 1. リポジトリをクローン
 ```bash
-git clone <repository-url>
-cd keiba-analysis-tool
+git clone https://github.com/takashi5144/keiba-2.git
+cd keiba-2
 ```
 
-2. 仮想環境を作成（推奨）
+2. 環境変数を設定
 ```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+cp .env.example .env
+# .envファイルを編集して適切な値を設定
 ```
 
-3. 依存関係をインストール
+3. Dockerコンテナを起動
 ```bash
-pip install -r requirements.txt
+docker-compose up -d
 ```
 
-## 使用方法
+### APIの使用
 
-### ローカルで実行
+APIドキュメント: http://localhost:8000/docs
 
-1. Streamlitアプリを起動
+#### 主要エンドポイント
+
+1. **レース予測**
 ```bash
-streamlit run app.py
+GET /api/v1/predictions/{race_id}
 ```
 
-2. ブラウザで `http://localhost:8501` にアクセス
-
-### データ収集
-
-1. サイドバーから「データ収集」を選択
-2. 対象日と競馬場を選択
-3. 「データ取得開始」をクリック
-
-### 分析機能
-
-- **ダッシュボード**: 全体的な統計情報と最近の傾向を表示
-- **馬情報分析**: 個別の馬の詳細な成績分析
-- **レース予測**: 機械学習を使用したレース結果予測
-- **投資戦略分析**: 様々な投資戦略のバックテスト
-
-## API エンドポイント
-
-Vercelにデプロイした場合、以下のAPIエンドポイントが利用可能：
-
-- `GET /api/races?date=YYYYMMDD` - 指定日のレース一覧
-- `GET /api/race/{race_id}` - レース詳細情報
-- `GET /api/horse/{horse_id}` - 馬の詳細情報
-- `GET /api/analysis/predict/{race_id}` - レース予測結果
-
-## デプロイ
-
-### Vercelへのデプロイ
-
-1. Vercel CLIをインストール
+2. **賭け推奨**
 ```bash
-npm i -g vercel
+GET /api/v1/betting/{race_id}?bankroll=100000&risk_level=moderate
 ```
 
-2. プロジェクトをデプロイ
+## 機械学習モデル
+
+### アンサンブル構成
+
+- **LightGBM** (40%): 高速で高精度な勾配ブースティング
+- **XGBoost** (30%): 安定した性能の勾配ブースティング
+- **Neural Network** (30%): 非線形パターンの捕捉
+
+### パフォーマンス目標
+
+- **ROI**: 5%以上
+- **的中率**: 単勝15%以上
+- **シャープレシオ**: 1.0以上
+- **最大ドローダウン**: 20%以下
+
+## 開発
+
+### ローカル開発環境
+
 ```bash
-vercel
+# Poetry環境のセットアップ
+poetry install
+
+# 開発サーバーの起動
+poetry run uvicorn services.api_gateway.main:app --reload
+
+# テストの実行
+poetry run pytest
 ```
 
-3. 環境変数を設定（必要に応じて）
-```
-DATABASE_URL=your_database_url
-```
+## 免責事項
 
-## 注意事項
-
-- スクレイピングは対象サイトの利用規約を守って行ってください
-- 過度なアクセスは避け、適切な間隔を空けてアクセスしてください
-- 本ツールによる予測は参考情報であり、実際の投資判断は自己責任で行ってください
-
-## ライセンス
-
-MIT License
-
-## 貢献
-
-プルリクエストは歓迎します。大きな変更の場合は、まずissueを作成して変更内容を議論してください。
+このシステムは研究・教育目的で開発されています。実際の賭博行為は自己責任で行ってください。

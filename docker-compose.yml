@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: horseracing_postgres
+    environment:
+      POSTGRES_USER: horseracing
+      POSTGRES_PASSWORD: horseracing123
+      POSTGRES_DB: horseracing
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - horseracing_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: horseracing_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - horseracing_network
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: horseracing_minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - horseracing_network
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.api
+    container_name: horseracing_api
+    environment:
+      DATABASE_URL: postgresql://horseracing:horseracing123@postgres:5432/horseracing
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      API_KEY: ${API_KEY:-your-secure-api-key}
+    volumes:
+      - ./services:/app/services
+      - ./database:/app/database
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - horseracing_network
+    command: uvicorn services.api_gateway.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.worker
+    container_name: horseracing_celery_worker
+    environment:
+      DATABASE_URL: postgresql://horseracing:horseracing123@postgres:5432/horseracing
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./services:/app/services
+      - ./database:/app/database
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - horseracing_network
+    command: celery -A services.data_collector.tasks worker --loglevel=info
+
+  # Celery Beat (Scheduler)
+  celery-beat:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.worker
+    container_name: horseracing_celery_beat
+    environment:
+      DATABASE_URL: postgresql://horseracing:horseracing123@postgres:5432/horseracing
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./services:/app/services
+      - ./database:/app/database
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - horseracing_network
+    command: celery -A services.data_collector.tasks beat --loglevel=info
+
+  # Flower (Celery Monitoring)
+  flower:
+    image: mher/flower:latest
+    container_name: horseracing_flower
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      FLOWER_PORT: 5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    networks:
+      - horseracing_network
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: horseracing_prometheus
+    volumes:
+      - ./deployment/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - horseracing_network
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: horseracing_grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - horseracing_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  horseracing_network:
+    driver: bridge
